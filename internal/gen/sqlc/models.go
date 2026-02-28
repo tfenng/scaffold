@@ -17,4 +17,5 @@ type User struct {
 	Birth     pgtype.Date
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
+	Uid       string
 }

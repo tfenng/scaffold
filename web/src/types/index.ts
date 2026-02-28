@@ -1,6 +1,7 @@
 export interface User {
   ID: number;
-  Email: string;
+  Uid: string;
+  Email: string | null;
   Name: string;
   UsedName: string | null;
   Company: string | null;

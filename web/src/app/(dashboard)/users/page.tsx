@@ -73,8 +73,7 @@ export default function UsersPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Email</TableHead>
+              <TableHead>UID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Company</TableHead>
               <TableHead>Birth</TableHead>
@@ -84,21 +83,20 @@ export default function UsersPage() {
           <TableBody>
             {isLoading || !data ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
+                <TableCell colSpan={5} className="text-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : (!data?.data?.items || data.data.items.length === 0) ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                   No users found
                 </TableCell>
               </TableRow>
             ) : (
               data.data.items.map((user: any) => (
                 <TableRow key={user.ID}>
-                  <TableCell>{user.ID}</TableCell>
-                  <TableCell>{user.Email}</TableCell>
+                  <TableCell>{user.Uid}</TableCell>
                   <TableCell>{user.Name}</TableCell>
                   <TableCell>{user.Company || "-"}</TableCell>
                   <TableCell>{user.Birth || "-"}</TableCell>
