@@ -12,6 +12,9 @@ type User struct {
 	ID        int64
 	Email     string
 	Name      string
+	UsedName  pgtype.Text
+	Company   pgtype.Text
+	Birth     pgtype.Date
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 }

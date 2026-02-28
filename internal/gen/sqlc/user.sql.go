@@ -31,31 +31,52 @@ func (q *Queries) CountUsers(ctx context.Context, arg CountUsersParams) (int64, 
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (email, name)
-VALUES ($1, $2)
-RETURNING id, email, name, created_at, updated_at
+INSERT INTO users (email, name, used_name, company, birth)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, email, name, used_name, company, birth, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	Email string
-	Name  string
+	Email    string
+	Name     string
+	UsedName pgtype.Text
+	Company  pgtype.Text
+	Birth    pgtype.Date
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, createUser, arg.Email, arg.Name)
+	row := q.db.QueryRow(ctx, createUser,
+		arg.Email,
+		arg.Name,
+		arg.UsedName,
+		arg.Company,
+		arg.Birth,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.Name,
+		&i.UsedName,
+		&i.Company,
+		&i.Birth,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
 }
 
+const deleteUser = `-- name: DeleteUser :exec
+DELETE FROM users WHERE id = $1
+`
+
+func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteUser, id)
+	return err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, name, created_at, updated_at
+SELECT id, email, name, used_name, company, birth, created_at, updated_at
 FROM users
 WHERE email = $1
 `
@@ -67,6 +88,9 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.ID,
 		&i.Email,
 		&i.Name,
+		&i.UsedName,
+		&i.Company,
+		&i.Birth,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -74,7 +98,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, email, name, created_at, updated_at
+SELECT id, email, name, used_name, company, birth, created_at, updated_at
 FROM users
 WHERE id = $1
 `
@@ -86,6 +110,9 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.ID,
 		&i.Email,
 		&i.Name,
+		&i.UsedName,
+		&i.Company,
+		&i.Birth,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -93,7 +120,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, email, name, created_at, updated_at
+SELECT id, email, name, used_name, company, birth, created_at, updated_at
 FROM users
 WHERE ($3::text IS NULL OR email = $3::text)
   AND ($4::text IS NULL OR name ILIKE ('%' || $4::text || '%'))
@@ -126,6 +153,9 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.ID,
 			&i.Email,
 			&i.Name,
+			&i.UsedName,
+			&i.Company,
+			&i.Birth,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -137,4 +167,41 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateUser = `-- name: UpdateUser :one
+UPDATE users
+SET name = $2, used_name = $3, company = $4, birth = $5, updated_at = now()
+WHERE id = $1
+RETURNING id, email, name, used_name, company, birth, created_at, updated_at
+`
+
+type UpdateUserParams struct {
+	ID       int64
+	Name     string
+	UsedName pgtype.Text
+	Company  pgtype.Text
+	Birth    pgtype.Date
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUser,
+		arg.ID,
+		arg.Name,
+		arg.UsedName,
+		arg.Company,
+		arg.Birth,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Name,
+		&i.UsedName,
+		&i.Company,
+		&i.Birth,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

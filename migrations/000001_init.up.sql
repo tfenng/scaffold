@@ -2,6 +2,9 @@ CREATE TABLE IF NOT EXISTS users (
   id BIGSERIAL PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
+  used_name TEXT,
+  company TEXT,
+  birth DATE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

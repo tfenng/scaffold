@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgconn"
@@ -51,14 +52,14 @@ func (s *UserService) GetByID(ctx context.Context, id int64) (sqlc.User, error) 
 	return u, nil
 }
 
-func (s *UserService) Create(ctx context.Context, email, name string) (sqlc.User, error) {
+func (s *UserService) Create(ctx context.Context, email, name string, usedName, company *string, birth *time.Time) (sqlc.User, error) {
 	if email == "" || name == "" {
 		return sqlc.User{}, domain.Invalid("email and name are required")
 	}
 
 	var out sqlc.User
 	err := s.Tx.WithinTx(ctx, func(ctx context.Context) error {
-		u, err := s.Users.Create(ctx, email, name)
+		u, err := s.Users.Create(ctx, email, name, usedName, company, birth)
 		if err != nil {
 			// 映射唯一约束冲突
 			var pgErr *pgconn.PgError
@@ -92,4 +93,71 @@ func (s *UserService) List(ctx context.Context, f repo.UserListFilter) (repo.Pag
 		return repo.Page[sqlc.User]{}, domain.Internal(err)
 	}
 	return out, nil
+}
+
+func (s *UserService) Update(ctx context.Context, id int64, name string, usedName, company *string, birth *time.Time) (sqlc.User, error) {
+	if id <= 0 {
+		return sqlc.User{}, domain.Invalid("id must be positive")
+	}
+	if name == "" {
+		return sqlc.User{}, domain.Invalid("name is required")
+	}
+
+	var out sqlc.User
+	err := s.Tx.WithinTx(ctx, func(ctx context.Context) error {
+		u, err := s.Users.Update(ctx, id, name, usedName, company, birth)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return domain.NotFound("user not found")
+			}
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) && pgErr.Code == sqlStateUniqueViolation {
+				return domain.Conflict("email already exists")
+			}
+			return domain.Internal(err)
+		}
+		out = u
+		return nil
+	})
+	if err != nil {
+		var ae *domain.AppError
+		if errors.As(err, &ae) {
+			return sqlc.User{}, ae
+		}
+		return sqlc.User{}, domain.Internal(err)
+	}
+
+	if s.UCache != nil {
+		_ = s.UCache.Set(ctx, out)
+	}
+	return out, nil
+}
+
+func (s *UserService) Delete(ctx context.Context, id int64) error {
+	if id <= 0 {
+		return domain.Invalid("id must be positive")
+	}
+
+	err := s.Tx.WithinTx(ctx, func(ctx context.Context) error {
+		err := s.Users.Delete(ctx, id)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return domain.NotFound("user not found")
+			}
+			return domain.Internal(err)
+		}
+		return nil
+	})
+	if err != nil {
+		var ae *domain.AppError
+		if errors.As(err, &ae) {
+			return ae
+		}
+		return domain.Internal(err)
+	}
+
+	if s.UCache != nil {
+		_ = s.UCache.Del(ctx, id)
+	}
+	return nil
 }

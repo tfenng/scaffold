@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/pgtype"
 	sqlc "github.com/tfenng/scaffold/internal/gen/sqlc"
 )
 
@@ -30,6 +31,13 @@ type userQueryRepo struct{ pool *pgxpool.Pool }
 
 func NewUserQueryRepo(pool *pgxpool.Pool) UserQueryRepo { return &userQueryRepo{pool: pool} }
 
+func toPgtypeText(s *string) pgtype.Text {
+	if s == nil {
+		return pgtype.Text{}
+	}
+	return pgtype.Text{String: *s, Valid: true}
+}
+
 func (r *userQueryRepo) q(ctx context.Context) *sqlc.Queries {
 	if tx, ok := TxFrom(ctx); ok {
 		return sqlc.New(tx)
@@ -48,8 +56,8 @@ func (r *userQueryRepo) List(ctx context.Context, f UserListFilter) (Page[sqlc.U
 	offset := (f.Page - 1) * f.PageSize
 
 	total, err := r.q(ctx).CountUsers(ctx, sqlc.CountUsersParams{
-		Email:    f.Email,
-		NameLike: f.NameLike,
+		Email:    toPgtypeText(f.Email),
+		NameLike: toPgtypeText(f.NameLike),
 	})
 	if err != nil {
 		return Page[sqlc.User]{}, err
@@ -58,8 +66,8 @@ func (r *userQueryRepo) List(ctx context.Context, f UserListFilter) (Page[sqlc.U
 	items, err := r.q(ctx).ListUsers(ctx, sqlc.ListUsersParams{
 		Limit:    limit,
 		Offset:   offset,
-		Email:    f.Email,
-		NameLike: f.NameLike,
+		Email:    toPgtypeText(f.Email),
+		NameLike: toPgtypeText(f.NameLike),
 	})
 	if err != nil {
 		return Page[sqlc.User]{}, err

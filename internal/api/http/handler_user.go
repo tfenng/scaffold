@@ -3,6 +3,7 @@ package http
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tfenng/scaffold/internal/repo"
@@ -19,17 +20,31 @@ func (h *UserHandler) Get(c *gin.Context) {
 }
 
 type createUserReq struct {
-	Email string `json:"email" binding:"required,email"`
-	Name  string `json:"name" binding:"required"`
+	Email    string  `json:"email" binding:"required,email"`
+	Name     string  `json:"name" binding:"required"`
+	UsedName *string `json:"used_name"`
+	Company  *string `json:"company"`
+	Birth    *string `json:"birth"`
 }
 
 func (h *UserHandler) Create(c *gin.Context) {
 	var req createUserReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Error(/*domain.Invalid*/ err) // 也可以把 bind 错误映射成 domain.Invalid
+		c.Error(/*domain.Invalid*/ err)
 		return
 	}
-	u, err := h.Svc.Create(c.Request.Context(), req.Email, req.Name)
+
+	var birth *time.Time
+	if req.Birth != nil {
+		t, err := time.Parse("2006-01-02", *req.Birth)
+		if err != nil {
+			c.Error(err)
+			return
+		}
+		birth = &t
+	}
+
+	u, err := h.Svc.Create(c.Request.Context(), req.Email, req.Name, req.UsedName, req.Company, birth)
 	if err != nil { c.Error(err); return }
 	c.JSON(http.StatusCreated, u)
 }
@@ -50,4 +65,42 @@ func (h *UserHandler) List(c *gin.Context) {
 	})
 	if err != nil { c.Error(err); return }
 	c.JSON(http.StatusOK, out)
+}
+
+type updateUserReq struct {
+	Name     string  `json:"name" binding:"required"`
+	UsedName *string `json:"used_name"`
+	Company  *string `json:"company"`
+	Birth    *string `json:"birth"`
+}
+
+func (h *UserHandler) Update(c *gin.Context) {
+	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
+
+	var req updateUserReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Error(err)
+		return
+	}
+
+	var birth *time.Time
+	if req.Birth != nil {
+		t, err := time.Parse("2006-01-02", *req.Birth)
+		if err != nil {
+			c.Error(err)
+			return
+		}
+		birth = &t
+	}
+
+	u, err := h.Svc.Update(c.Request.Context(), id, req.Name, req.UsedName, req.Company, birth)
+	if err != nil { c.Error(err); return }
+	c.JSON(http.StatusOK, u)
+}
+
+func (h *UserHandler) Delete(c *gin.Context) {
+	id, _ := strconv.ParseInt(c.Param("id"), 10, 64)
+	err := h.Svc.Delete(c.Request.Context(), id)
+	if err != nil { c.Error(err); return }
+	c.JSON(http.StatusNoContent, nil)
 }

@@ -16,9 +16,11 @@ import (
 func main() {
 	ctx := context.Background()
 
-	dsn := "postgres://user:pass@localhost:5432/app?sslmode=disable"
+	dsn := "postgres://xmap:xmap@localhost:5432/app?sslmode=disable"
 	pool, err := db.NewPostgres(ctx, dsn)
-	if err != nil { log.Fatal(err) }
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer pool.Close()
 
 	rdb := cache.NewRedis("127.0.0.1:6379")
@@ -44,6 +46,8 @@ func main() {
 	r.GET("/users/:id", h.Get)
 	r.POST("/users", h.Create)
 	r.GET("/users", h.List)
+	r.PUT("/users/:id", h.Update)
+	r.DELETE("/users/:id", h.Delete)
 
 	log.Fatal(r.Run(":8080"))
 }
