@@ -51,7 +51,7 @@ export function UserDialog({ open, onOpenChange, userId }: UserDialogProps) {
         name: "",
         used_name: "",
         company: "",
-        birth: "",
+        birth: "2000-01-01",
       });
     }
   }, [user, isEdit, reset, open]);
@@ -97,53 +97,29 @@ export function UserDialog({ open, onOpenChange, userId }: UserDialogProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-4 py-4">
-            {isEdit ? (
+            {isEdit && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">UID</Label>
+                <span className="col-span-3 text-muted-foreground">{user?.data?.Uid || "-"}</span>
+              </div>
+            )}
+            {!isEdit && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="uid" className="text-right">
                   UID
                 </Label>
                 <Input
                   id="uid"
-                  value={user?.data?.Uid || ""}
-                  disabled
-                  className="col-span-3 bg-muted"
+                  {...register("uid")}
+                  className="col-span-3"
+                  placeholder="Required"
                 />
+                {errors.uid && (
+                  <p className="col-span-4 text-right text-sm text-destructive">
+                    {errors.uid.message as string}
+                  </p>
+                )}
               </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="uid" className="text-right">
-                    UID
-                  </Label>
-                  <Input
-                    id="uid"
-                    {...register("uid")}
-                    className="col-span-3"
-                    placeholder="Required"
-                  />
-                  {errors.uid && (
-                    <p className="col-span-4 text-right text-sm text-destructive">
-                      {errors.uid.message as string}
-                    </p>
-                  )}
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="email" className="text-right">
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    {...register("email")}
-                    className="col-span-3"
-                    placeholder="user@example.com"
-                  />
-                  {errors.email && (
-                    <p className="col-span-4 text-right text-sm text-destructive">
-                      {errors.email.message as string}
-                    </p>
-                  )}
-                </div>
-              </>
             )}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
@@ -200,6 +176,24 @@ export function UserDialog({ open, onOpenChange, userId }: UserDialogProps) {
                 </p>
               )}
             </div>
+            {!isEdit && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="email" className="text-right">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  {...register("email")}
+                  className="col-span-3"
+                  placeholder="user@example.com"
+                />
+                {errors.email && (
+                  <p className="col-span-4 text-right text-sm text-destructive">
+                    {errors.email.message as string}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
