@@ -10,6 +10,18 @@ export interface User {
   UpdatedAt: string;
 }
 
+export interface UserResponse {
+  id: number;
+  uid: string;
+  email: string | null;
+  name: string;
+  used_name: string | null;
+  company: string | null;
+  birth: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Page<T> {
   items: T[];
   total: number;

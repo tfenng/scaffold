@@ -95,17 +95,17 @@ export default function UsersPage() {
               </TableRow>
             ) : (
               data.data.items.map((user: any) => (
-                <TableRow key={user.ID}>
-                  <TableCell>{user.ID}</TableCell>
-                  <TableCell>{user.Name}</TableCell>
-                  <TableCell>{user.Company || "-"}</TableCell>
-                  <TableCell>{user.Birth || "-"}</TableCell>
+                <TableRow key={user.id}>
+                  <TableCell>{user.id}</TableCell>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.company || "-"}</TableCell>
+                  <TableCell>{user.birth || "-"}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleEdit(user.ID)}
+                        onClick={() => handleEdit(user.id)}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -114,7 +114,7 @@ export default function UsersPage() {
                         size="icon"
                         onClick={() => {
                           if (confirm("Are you sure?")) {
-                            deleteMutation.mutate(user.ID);
+                            deleteMutation.mutate(user.id);
                           }
                         }}
                       >
