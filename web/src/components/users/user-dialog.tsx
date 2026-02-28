@@ -97,7 +97,19 @@ export function UserDialog({ open, onOpenChange, userId }: UserDialogProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-4 py-4">
-            {!isEdit && (
+            {isEdit ? (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="uid" className="text-right">
+                  UID
+                </Label>
+                <Input
+                  id="uid"
+                  value={user?.data?.Uid || ""}
+                  disabled
+                  className="col-span-3 bg-muted"
+                />
+              </div>
+            ) : (
               <>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="uid" className="text-right">

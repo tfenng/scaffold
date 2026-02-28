@@ -73,7 +73,7 @@ export default function UsersPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>UID</TableHead>
+              <TableHead>ID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Company</TableHead>
               <TableHead>Birth</TableHead>
@@ -96,7 +96,7 @@ export default function UsersPage() {
             ) : (
               data.data.items.map((user: any) => (
                 <TableRow key={user.ID}>
-                  <TableCell>{user.Uid}</TableCell>
+                  <TableCell>{user.ID}</TableCell>
                   <TableCell>{user.Name}</TableCell>
                   <TableCell>{user.Company || "-"}</TableCell>
                   <TableCell>{user.Birth || "-"}</TableCell>
