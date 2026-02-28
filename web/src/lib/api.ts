@@ -6,10 +6,10 @@ const api = axios.create({
 });
 
 export const userApi = {
-  getById: (id: number) => api.get<User>(`/users/${id}`),
+  getById: (id: number) => api.get(`/users/${id}`),
 
   list: (filter: UserListFilter) =>
-    api.get<Page<User>>("/users", { params: filter }),
+    api.get("/users", { params: filter }),
 
   create: (data: {
     email: string;
@@ -17,14 +17,14 @@ export const userApi = {
     used_name?: string;
     company?: string;
     birth?: string;
-  }) => api.post<User>("/users", data),
+  }) => api.post("/users", data),
 
   update: (id: number, data: {
     name: string;
     used_name?: string;
     company?: string;
     birth?: string;
-  }) => api.put<User>(`/users/${id}`, data),
+  }) => api.put(`/users/${id}`, data),
 
   delete: (id: number) => api.delete(`/users/${id}`),
 };
