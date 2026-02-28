@@ -52,19 +52,19 @@ func (s *UserService) GetByID(ctx context.Context, id int64) (sqlc.User, error) 
 	return u, nil
 }
 
-func (s *UserService) Create(ctx context.Context, email, name string, usedName, company *string, birth *time.Time) (sqlc.User, error) {
-	if email == "" || name == "" {
-		return sqlc.User{}, domain.Invalid("email and name are required")
+func (s *UserService) Create(ctx context.Context, uid, email, name string, usedName, company *string, birth *time.Time) (sqlc.User, error) {
+	if uid == "" || name == "" {
+		return sqlc.User{}, domain.Invalid("uid and name are required")
 	}
 
 	var out sqlc.User
 	err := s.Tx.WithinTx(ctx, func(ctx context.Context) error {
-		u, err := s.Users.Create(ctx, email, name, usedName, company, birth)
+		u, err := s.Users.Create(ctx, uid, email, name, usedName, company, birth)
 		if err != nil {
 			// 映射唯一约束冲突
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgErr.Code == sqlStateUniqueViolation {
-				return domain.Conflict("email already exists")
+				return domain.Conflict("uid or name already exists")
 			}
 			return domain.Internal(err)
 		}

@@ -20,7 +20,8 @@ func (h *UserHandler) Get(c *gin.Context) {
 }
 
 type createUserReq struct {
-	Email    string  `json:"email" binding:"required,email"`
+	Uid      string  `json:"uid" binding:"required"`
+	Email    string  `json:"email"`
 	Name     string  `json:"name" binding:"required"`
 	UsedName *string `json:"used_name"`
 	Company  *string `json:"company"`
@@ -44,7 +45,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 		birth = &t
 	}
 
-	u, err := h.Svc.Create(c.Request.Context(), req.Email, req.Name, req.UsedName, req.Company, birth)
+	u, err := h.Svc.Create(c.Request.Context(), req.Uid, req.Email, req.Name, req.UsedName, req.Company, birth)
 	if err != nil { c.Error(err); return }
 	c.JSON(http.StatusCreated, u)
 }

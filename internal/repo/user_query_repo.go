@@ -74,5 +74,21 @@ func (r *userQueryRepo) List(ctx context.Context, f UserListFilter) (Page[sqlc.U
 	}
 
 	totalPages := int32((total + int64(limit) - 1) / int64(limit))
-	return Page[sqlc.User]{Items: items, Total: total, Page: f.Page, PageSize: limit, TotalPages: totalPages}, nil
+
+	users := make([]sqlc.User, len(items))
+	for i, item := range items {
+		users[i] = sqlc.User{
+			ID:        item.ID,
+			Uid:       item.Uid,
+			Email:     item.Email,
+			Name:      item.Name,
+			UsedName:  item.UsedName,
+			Company:   item.Company,
+			Birth:     item.Birth,
+			CreatedAt: item.CreatedAt,
+			UpdatedAt: item.UpdatedAt,
+		}
+	}
+
+	return Page[sqlc.User]{Items: users, Total: total, Page: f.Page, PageSize: limit, TotalPages: totalPages}, nil
 }
