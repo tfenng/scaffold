@@ -88,7 +88,7 @@ export default function UsersPage() {
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
-            ) : data.items.length === 0 ? (
+            ) : (!data?.items || data.items.length === 0) ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   No users found
