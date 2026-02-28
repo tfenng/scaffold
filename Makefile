@@ -1,4 +1,4 @@
-DB_URL=postgres://user:pass@localhost:5432/app?sslmode=disable
+DB_URL=postgres://xmap:xmap@localhost:5432/app?sslmode=disable
 
 sqlc:
 	sqlc generate

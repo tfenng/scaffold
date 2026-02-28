@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 
 	"github.com/tfenng/scaffold/internal/api/http"
 	"github.com/tfenng/scaffold/internal/cache"
@@ -40,6 +41,7 @@ func main() {
 
 	r := gin.New()
 	r.Use(gin.Recovery())
+	r.Use(cors.Default())
 	r.Use(http.ErrorMiddleware())
 
 	h := &http.UserHandler{Svc: userSvc}
