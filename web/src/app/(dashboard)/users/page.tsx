@@ -88,14 +88,14 @@ export default function UsersPage() {
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
-            ) : data?.data.items.length === 0 ? (
+            ) : data?.items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   No users found
                 </TableCell>
               </TableRow>
             ) : (
-              data?.data.items.map((user) => (
+              data?.items.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>{user.id}</TableCell>
                   <TableCell>{user.email}</TableCell>
@@ -131,7 +131,7 @@ export default function UsersPage() {
         </Table>
       </div>
 
-      {data?.data && data.data.total_pages > 1 && (
+      {data && data.total_pages > 1 && (
         <div className="flex justify-center gap-2 mt-4">
           <Button
             variant="outline"
@@ -141,11 +141,11 @@ export default function UsersPage() {
             Previous
           </Button>
           <span className="flex items-center px-4">
-            Page {data.data.page} of {data.data.total_pages}
+            Page {data.page} of {data.total_pages}
           </span>
           <Button
             variant="outline"
-            disabled={filters.page === data.data.total_pages}
+            disabled={filters.page === data.total_pages}
             onClick={() => handlePageChange(filters.page! + 1)}
           >
             Next
