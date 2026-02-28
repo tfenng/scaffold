@@ -10,11 +10,11 @@ export interface User {
 }
 
 export interface Page<T> {
-  Items: T[];
-  Total: number;
-  Page: number;
-  PageSize: number;
-  TotalPages: number;
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
 }
 
 export interface UserListFilter {
