@@ -40,10 +40,10 @@ export function UserDialog({ open, onOpenChange, userId }: UserDialogProps) {
   useEffect(() => {
     if (user?.data && isEdit) {
       reset({
-        name: user.data.name,
-        used_name: user.data.used_name || "",
-        company: user.data.company || "",
-        birth: user.data.birth || "",
+        name: user.data.Name,
+        used_name: user.data.UsedName || "",
+        company: user.data.Company || "",
+        birth: user.data.Birth || "",
       });
     } else if (!isEdit) {
       reset({

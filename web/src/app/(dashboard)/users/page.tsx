@@ -88,26 +88,26 @@ export default function UsersPage() {
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
-            ) : (!data?.items || data.items.length === 0) ? (
+            ) : (!data?.Items || data.Items.length === 0) ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   No users found
                 </TableCell>
               </TableRow>
             ) : (
-              data.items.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.id}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.name}</TableCell>
-                  <TableCell>{user.company || "-"}</TableCell>
-                  <TableCell>{user.birth || "-"}</TableCell>
+              data.Items.map((user) => (
+                <TableRow key={user.ID}>
+                  <TableCell>{user.ID}</TableCell>
+                  <TableCell>{user.Email}</TableCell>
+                  <TableCell>{user.Name}</TableCell>
+                  <TableCell>{user.Company || "-"}</TableCell>
+                  <TableCell>{user.Birth || "-"}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleEdit(user.id)}
+                        onClick={() => handleEdit(user.ID)}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -116,7 +116,7 @@ export default function UsersPage() {
                         size="icon"
                         onClick={() => {
                           if (confirm("Are you sure?")) {
-                            deleteMutation.mutate(user.id);
+                            deleteMutation.mutate(user.ID);
                           }
                         }}
                       >
@@ -131,7 +131,7 @@ export default function UsersPage() {
         </Table>
       </div>
 
-      {data && data.total_pages > 1 && (
+      {data && data.TotalPages > 1 && (
         <div className="flex justify-center gap-2 mt-4">
           <Button
             variant="outline"
@@ -141,11 +141,11 @@ export default function UsersPage() {
             Previous
           </Button>
           <span className="flex items-center px-4">
-            Page {data.page} of {data.total_pages}
+            Page {data.Page} of {data.TotalPages}
           </span>
           <Button
             variant="outline"
-            disabled={filters.page === data.total_pages}
+            disabled={filters.page === data.TotalPages}
             onClick={() => handlePageChange(filters.page! + 1)}
           >
             Next

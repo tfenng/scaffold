@@ -1,20 +1,20 @@
 export interface User {
-  id: number;
-  email: string;
-  name: string;
-  used_name: string | null;
-  company: string | null;
-  birth: string | null;
-  created_at: string;
-  updated_at: string;
+  ID: number;
+  Email: string;
+  Name: string;
+  UsedName: string | null;
+  Company: string | null;
+  Birth: string | null;
+  CreatedAt: string;
+  UpdatedAt: string;
 }
 
 export interface Page<T> {
-  items: T[];
-  total: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
+  Items: T[];
+  Total: number;
+  Page: number;
+  PageSize: number;
+  TotalPages: number;
 }
 
 export interface UserListFilter {
