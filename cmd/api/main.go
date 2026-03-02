@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
+	"github.com/joho/godotenv"
 
 	"github.com/tfenng/scaffold/internal/api/http"
 	"github.com/tfenng/scaffold/internal/cache"
@@ -14,17 +17,34 @@ import (
 	"github.com/tfenng/scaffold/internal/service"
 )
 
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
 func main() {
 	ctx := context.Background()
 
-	dsn := "postgres://xmap:xmap@localhost:5432/app?sslmode=disable"
+	if err := godotenv.Load(); err != nil {
+		log.Println("warning: .env file not found, using environment variables")
+	}
+
+	host := getEnv("POSTGRES_HOST", "localhost")
+	dbName := getEnv("POSTGRES_DB", "app")
+	user := getEnv("POSTGRES_USER", "xmap")
+	password := getEnv("POSTGRES_PASSWORD", "xmap")
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:5432/%s?sslmode=disable", user, password, host, dbName)
+
 	pool, err := db.NewPostgres(ctx, dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer pool.Close()
 
-	rdb := cache.NewRedis("127.0.0.1:6379")
+	redisAddr := getEnv("REDIS_ADDR", "127.0.0.1:6379")
+	rdb := cache.NewRedis(redisAddr)
 	if err := cache.Ping(ctx, rdb); err != nil {
 		log.Println("redis unavailable, continue without cache:", err)
 		// 你也可以在这里决定直接退出
