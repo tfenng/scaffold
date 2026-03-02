@@ -56,6 +56,8 @@ npm run dev
 
 ## 后端开发指南
 
+详细架构说明见 [backend_architect.md](backend_architect.md)。
+
 ### 目录结构
 
 ```
