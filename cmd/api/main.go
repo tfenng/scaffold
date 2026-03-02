@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
 	"github.com/tfenng/scaffold/internal/api/http"
@@ -45,15 +45,20 @@ func main() {
 
 	redisAddr := getEnv("REDIS_ADDR", "127.0.0.1:6379")
 	rdb := cache.NewRedis(redisAddr)
+	defer func() { _ = rdb.Close() }()
+
+	var userCache *cache.UserCache
 	if err := cache.Ping(ctx, rdb); err != nil {
 		log.Println("redis unavailable, continue without cache:", err)
-		// 你也可以在这里决定直接退出
+		log.Println("cache_mode=no-cache")
+	} else {
+		userCache = cache.NewUserCache(rdb)
+		log.Println("cache_mode=redis")
 	}
 
 	txMgr := repo.PgxTxManager{Pool: pool}
 	userRepo := repo.NewUserRepo(pool)
 	userQueryRepo := repo.NewUserQueryRepo(pool)
-	userCache := cache.NewUserCache(rdb)
 
 	userSvc := &service.UserService{
 		Tx: txMgr, Users: userRepo, Query: userQueryRepo, UCache: userCache,

@@ -8,9 +8,12 @@ Base URL: `http://localhost:8080`
 
 **POST** `/users`
 
+`email` is optional. Empty or invalid historical values are normalized to `null` in storage.
+
 Request:
 ```json
 {
+  "uid": "user_1",
   "email": "user@example.com",
   "name": "User Name",
   "used_name": "Old Name",
@@ -23,6 +26,7 @@ Response (201):
 ```json
 {
   "id": 1,
+  "uid": "user_1",
   "email": "user@example.com",
   "name": "User Name",
   "used_name": "Old Name",
@@ -43,6 +47,7 @@ Response (200):
 ```json
 {
   "id": 1,
+  "uid": "user_1",
   "email": "user@example.com",
   "name": "User Name",
   "used_name": "Old Name",
@@ -78,6 +83,7 @@ Response (200):
   "items": [
     {
       "id": 1,
+      "uid": "user_1",
       "email": "user@example.com",
       "name": "User Name",
       "used_name": "Old Name",
@@ -114,6 +120,7 @@ Response (200):
 ```json
 {
   "id": 1,
+  "uid": "user_1",
   "email": "user@example.com",
   "name": "New Name",
   "used_name": "Old Name",

@@ -15,7 +15,7 @@ WHERE email = $1;
 
 -- name: CreateUser :one
 INSERT INTO users (uid, name, email, used_name, company, birth)
-VALUES ($1, $2, $3, $4, $5, $6)
+VALUES ($1, $2, sqlc.narg('email')::text, $3, $4, $5)
 RETURNING id, uid, email, name, used_name, company, birth, created_at, updated_at;
 
 -- name: ListUsers :many

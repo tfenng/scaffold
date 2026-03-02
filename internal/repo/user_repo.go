@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 	sqlc "github.com/tfenng/scaffold/internal/gen/sqlc"
 )
 
@@ -13,7 +13,7 @@ type UserRepo interface {
 	GetByID(ctx context.Context, id int64) (sqlc.User, error)
 	GetByEmail(ctx context.Context, email string) (sqlc.User, error)
 	GetByUID(ctx context.Context, uid string) (sqlc.User, error)
-	Create(ctx context.Context, uid, email, name string, usedName, company *string, birth *time.Time) (sqlc.User, error)
+	Create(ctx context.Context, uid string, email *string, name string, usedName, company *string, birth *time.Time) (sqlc.User, error)
 	Update(ctx context.Context, id int64, name string, usedName, company *string, birth *time.Time) (sqlc.User, error)
 	Delete(ctx context.Context, id int64) error
 }
@@ -37,7 +37,7 @@ func (r *userRepo) GetByID(ctx context.Context, id int64) (sqlc.User, error) {
 	return toUser(row)
 }
 func (r *userRepo) GetByEmail(ctx context.Context, email string) (sqlc.User, error) {
-	row, err := r.q(ctx).GetUserByEmail(ctx, email)
+	row, err := r.q(ctx).GetUserByEmail(ctx, pgtype.Text{String: email, Valid: true})
 	if err != nil {
 		return sqlc.User{}, err
 	}
@@ -50,11 +50,11 @@ func (r *userRepo) GetByUID(ctx context.Context, uid string) (sqlc.User, error) 
 	}
 	return toUserFromUID(row)
 }
-func (r *userRepo) Create(ctx context.Context, uid, email, name string, usedName, company *string, birth *time.Time) (sqlc.User, error) {
+func (r *userRepo) Create(ctx context.Context, uid string, email *string, name string, usedName, company *string, birth *time.Time) (sqlc.User, error) {
 	row, err := r.q(ctx).CreateUser(ctx, sqlc.CreateUserParams{
 		Uid:      uid,
-		Email:    email,
 		Name:     name,
+		Email:    toPgtypeText(email),
 		UsedName: toPgtypeText(usedName),
 		Company:  toPgtypeText(company),
 		Birth:    toPgtypeDate(birth),

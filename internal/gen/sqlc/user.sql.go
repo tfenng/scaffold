@@ -32,23 +32,23 @@ func (q *Queries) CountUsers(ctx context.Context, arg CountUsersParams) (int64, 
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (uid, name, email, used_name, company, birth)
-VALUES ($1, $2, $3, $4, $5, $6)
+VALUES ($1, $2, $6::text, $3, $4, $5)
 RETURNING id, uid, email, name, used_name, company, birth, created_at, updated_at
 `
 
 type CreateUserParams struct {
 	Uid      string
 	Name     string
-	Email    string
 	UsedName pgtype.Text
 	Company  pgtype.Text
 	Birth    pgtype.Date
+	Email    pgtype.Text
 }
 
 type CreateUserRow struct {
 	ID        int64
 	Uid       string
-	Email     string
+	Email     pgtype.Text
 	Name      string
 	UsedName  pgtype.Text
 	Company   pgtype.Text
@@ -61,10 +61,10 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 	row := q.db.QueryRow(ctx, createUser,
 		arg.Uid,
 		arg.Name,
-		arg.Email,
 		arg.UsedName,
 		arg.Company,
 		arg.Birth,
+		arg.Email,
 	)
 	var i CreateUserRow
 	err := row.Scan(
@@ -99,7 +99,7 @@ WHERE email = $1
 type GetUserByEmailRow struct {
 	ID        int64
 	Uid       string
-	Email     string
+	Email     pgtype.Text
 	Name      string
 	UsedName  pgtype.Text
 	Company   pgtype.Text
@@ -108,7 +108,7 @@ type GetUserByEmailRow struct {
 	UpdatedAt pgtype.Timestamptz
 }
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
+func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (GetUserByEmailRow, error) {
 	row := q.db.QueryRow(ctx, getUserByEmail, email)
 	var i GetUserByEmailRow
 	err := row.Scan(
@@ -134,7 +134,7 @@ WHERE id = $1
 type GetUserByIDRow struct {
 	ID        int64
 	Uid       string
-	Email     string
+	Email     pgtype.Text
 	Name      string
 	UsedName  pgtype.Text
 	Company   pgtype.Text
@@ -169,7 +169,7 @@ WHERE uid = $1
 type GetUserByUIDRow struct {
 	ID        int64
 	Uid       string
-	Email     string
+	Email     pgtype.Text
 	Name      string
 	UsedName  pgtype.Text
 	Company   pgtype.Text
@@ -214,7 +214,7 @@ type ListUsersParams struct {
 type ListUsersRow struct {
 	ID        int64
 	Uid       string
-	Email     string
+	Email     pgtype.Text
 	Name      string
 	UsedName  pgtype.Text
 	Company   pgtype.Text
@@ -276,7 +276,7 @@ type UpdateUserParams struct {
 type UpdateUserRow struct {
 	ID        int64
 	Uid       string
-	Email     string
+	Email     pgtype.Text
 	Name      string
 	UsedName  pgtype.Text
 	Company   pgtype.Text

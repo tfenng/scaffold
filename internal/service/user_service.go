@@ -3,15 +3,17 @@ package service
 import (
 	"context"
 	"errors"
+	"net/mail"
+	"strings"
 	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v5"
 
 	"github.com/tfenng/scaffold/internal/cache"
 	"github.com/tfenng/scaffold/internal/domain"
-	"github.com/tfenng/scaffold/internal/repo"
 	sqlc "github.com/tfenng/scaffold/internal/gen/sqlc"
+	"github.com/tfenng/scaffold/internal/repo"
 )
 
 type UserService struct {
@@ -35,7 +37,6 @@ func (s *UserService) GetByID(ctx context.Context, id int64) (sqlc.User, error) 
 		if u, ok, err := s.UCache.Get(ctx, id); err == nil && ok {
 			return u, nil
 		}
-		// 缓存错误：不阻断主流程（建议打日志/指标）
 	}
 
 	u, err := s.Users.GetByID(ctx, id)
@@ -52,19 +53,25 @@ func (s *UserService) GetByID(ctx context.Context, id int64) (sqlc.User, error) 
 	return u, nil
 }
 
-func (s *UserService) Create(ctx context.Context, uid, email, name string, usedName, company *string, birth *time.Time) (sqlc.User, error) {
+func (s *UserService) Create(ctx context.Context, uid string, email *string, name string, usedName, company *string, birth *time.Time) (sqlc.User, error) {
+	uid = strings.TrimSpace(uid)
+	name = strings.TrimSpace(name)
 	if uid == "" || name == "" {
 		return sqlc.User{}, domain.Invalid("uid and name are required")
 	}
 
+	normalizedEmail, err := normalizeEmail(email)
+	if err != nil {
+		return sqlc.User{}, domain.Invalid("email must be a valid email address")
+	}
+
 	var out sqlc.User
-	err := s.Tx.WithinTx(ctx, func(ctx context.Context) error {
-		u, err := s.Users.Create(ctx, uid, email, name, usedName, company, birth)
+	err = s.Tx.WithinTx(ctx, func(ctx context.Context) error {
+		u, err := s.Users.Create(ctx, uid, normalizedEmail, name, usedName, company, birth)
 		if err != nil {
-			// 映射唯一约束冲突
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgErr.Code == sqlStateUniqueViolation {
-				return domain.Conflict("uid or name already exists")
+				return domain.Conflict("uid, name or email already exists")
 			}
 			return domain.Internal(err)
 		}
@@ -72,7 +79,6 @@ func (s *UserService) Create(ctx context.Context, uid, email, name string, usedN
 		return nil
 	})
 	if err != nil {
-		// 事务内部我们直接 return domain.AppError（或 Internal）
 		var ae *domain.AppError
 		if errors.As(err, &ae) {
 			return sqlc.User{}, ae
@@ -87,7 +93,6 @@ func (s *UserService) Create(ctx context.Context, uid, email, name string, usedN
 }
 
 func (s *UserService) List(ctx context.Context, f repo.UserListFilter) (repo.Page[sqlc.User], error) {
-	// 列表默认不做缓存（参数维度多、失效难），你后续要做"第一页短 TTL"也很好加
 	out, err := s.Query.List(ctx, f)
 	if err != nil {
 		return repo.Page[sqlc.User]{}, domain.Internal(err)
@@ -160,4 +165,20 @@ func (s *UserService) Delete(ctx context.Context, id int64) error {
 		_ = s.UCache.Del(ctx, id)
 	}
 	return nil
+}
+
+func normalizeEmail(email *string) (*string, error) {
+	if email == nil {
+		return nil, nil
+	}
+
+	v := strings.TrimSpace(*email)
+	if v == "" {
+		return nil, nil
+	}
+
+	if _, err := mail.ParseAddress(v); err != nil {
+		return nil, err
+	}
+	return &v, nil
 }

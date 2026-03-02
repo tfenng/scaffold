@@ -18,11 +18,41 @@ interface UserDialogProps {
   userId: number | null;
 }
 
+type UserFormValues = {
+  uid?: string;
+  email?: string;
+  name: string;
+  used_name?: string;
+  company?: string;
+  birth?: string;
+};
+
+const toOptionalString = (value?: string) => {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+};
+
+const normalizeCreateInput = (data: CreateUserInput) => ({
+  uid: data.uid.trim(),
+  name: data.name.trim(),
+  email: toOptionalString(data.email),
+  used_name: toOptionalString(data.used_name),
+  company: toOptionalString(data.company),
+  birth: toOptionalString(data.birth),
+});
+
+const normalizeUpdateInput = (data: UpdateUserInput) => ({
+  name: data.name.trim(),
+  used_name: toOptionalString(data.used_name),
+  company: toOptionalString(data.company),
+  birth: toOptionalString(data.birth),
+});
+
 export function UserDialog({ open, onOpenChange, userId }: UserDialogProps) {
   const queryClient = useQueryClient();
   const isEdit = userId !== null;
 
-  const { data: user, isLoading } = useQuery({
+  const { data: user } = useQuery({
     queryKey: ["user", userId],
     queryFn: () => userApi.getById(userId!),
     enabled: isEdit && open,
@@ -33,21 +63,22 @@ export function UserDialog({ open, onOpenChange, userId }: UserDialogProps) {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CreateUserInput | UpdateUserInput>({
+  } = useForm<UserFormValues>({
     resolver: zodResolver(isEdit ? updateUserSchema : createUserSchema),
   });
 
   useEffect(() => {
     if (user?.data && isEdit) {
       reset({
-        name: user.data.Name,
-        used_name: user.data.UsedName || "",
-        company: user.data.Company || "",
-        birth: user.data.Birth || "",
+        name: user.data.name,
+        used_name: user.data.used_name || "",
+        company: user.data.company || "",
+        birth: user.data.birth || "",
       });
     } else if (!isEdit) {
       reset({
         uid: "",
+        email: "",
         name: "",
         used_name: "",
         company: "",
@@ -57,7 +88,7 @@ export function UserDialog({ open, onOpenChange, userId }: UserDialogProps) {
   }, [user, isEdit, reset, open]);
 
   const createMutation = useMutation({
-    mutationFn: (data: CreateUserInput) => userApi.create(data),
+    mutationFn: (data: CreateUserInput) => userApi.create(normalizeCreateInput(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       toast.success("User created successfully");
@@ -69,7 +100,7 @@ export function UserDialog({ open, onOpenChange, userId }: UserDialogProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: UpdateUserInput) => userApi.update(userId!, data),
+    mutationFn: (data: UpdateUserInput) => userApi.update(userId!, normalizeUpdateInput(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["user", userId] });
@@ -81,7 +112,7 @@ export function UserDialog({ open, onOpenChange, userId }: UserDialogProps) {
     },
   });
 
-  const onSubmit = (data: CreateUserInput | UpdateUserInput) => {
+  const onSubmit = (data: UserFormValues) => {
     if (isEdit) {
       updateMutation.mutate(data as UpdateUserInput);
     } else {
@@ -100,7 +131,7 @@ export function UserDialog({ open, onOpenChange, userId }: UserDialogProps) {
             {isEdit && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">UID</Label>
-                <span className="col-span-3 text-muted-foreground">{user?.data?.Uid || "-"}</span>
+                <span className="col-span-3 text-muted-foreground">{user?.data?.uid || "-"}</span>
               </div>
             )}
             {!isEdit && (

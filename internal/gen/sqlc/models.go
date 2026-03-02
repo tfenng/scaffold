@@ -10,7 +10,7 @@ import (
 
 type User struct {
 	ID        int64
-	Email     string
+	Email     pgtype.Text
 	Name      string
 	UsedName  pgtype.Text
 	Company   pgtype.Text
