@@ -26,6 +26,10 @@ type UserService struct {
 // Postgres SQLSTATE
 const (
 	sqlStateUniqueViolation = "23505"
+	constraintUsersUIDUnique       = "users_uid_unique"
+	constraintUsersNameUnique      = "users_name_unique"
+	constraintUsersEmailUnique     = "users_email_unique_not_null"
+	constraintUsersEmailUniqueOld  = "users_email_key"
 )
 
 func (s *UserService) GetByID(ctx context.Context, id int64) (sqlc.User, error) {
@@ -71,7 +75,7 @@ func (s *UserService) Create(ctx context.Context, uid string, email *string, nam
 		if err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgErr.Code == sqlStateUniqueViolation {
-				return domain.Conflict("uid, name or email already exists")
+				return mapUniqueViolation(pgErr)
 			}
 			return domain.Internal(err)
 		}
@@ -117,7 +121,7 @@ func (s *UserService) Update(ctx context.Context, id int64, name string, usedNam
 			}
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgErr.Code == sqlStateUniqueViolation {
-				return domain.Conflict("email already exists")
+				return mapUniqueViolation(pgErr)
 			}
 			return domain.Internal(err)
 		}
@@ -181,4 +185,17 @@ func normalizeEmail(email *string) (*string, error) {
 		return nil, err
 	}
 	return &v, nil
+}
+
+func mapUniqueViolation(pgErr *pgconn.PgError) *domain.AppError {
+	switch pgErr.ConstraintName {
+	case constraintUsersUIDUnique:
+		return domain.Conflict("uid already exists")
+	case constraintUsersNameUnique:
+		return domain.Conflict("name already exists")
+	case constraintUsersEmailUnique, constraintUsersEmailUniqueOld:
+		return domain.Conflict("email already exists")
+	default:
+		return domain.Conflict("unique constraint violation")
+	}
 }

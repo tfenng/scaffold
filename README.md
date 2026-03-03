@@ -165,3 +165,10 @@ NEXT_PUBLIC_API_URL=http://localhost:8080
 ## License
 
 MIT
+
+## Migration Policy
+
+- Historical migrations under `migrations/` are immutable once applied in any environment.
+- Some early migrations have overlapping schema steps (for example, columns created in `000001` and conditionally added again in `000002`).
+- This overlap is retained for backward compatibility and cross-environment safety, and should not be "cleaned up" by rewriting old migration files.
+- For fresh environments, prefer a future baseline migration set to reduce cognitive load while preserving the existing migration chain for deployed environments.
