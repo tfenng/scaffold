@@ -34,7 +34,7 @@ WHERE (sqlc.narg('email')::text IS NULL OR email = sqlc.narg('email')::text)
 
 -- name: UpdateUser :one
 UPDATE users
-SET name = $2, used_name = $3, company = $4, birth = $5, updated_at = now()
+SET name = $2, email = sqlc.narg('email')::text, used_name = $3, company = $4, birth = $5, updated_at = now()
 WHERE id = $1
 RETURNING id, uid, email, name, used_name, company, birth, created_at, updated_at;
 

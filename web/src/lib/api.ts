@@ -15,6 +15,7 @@ type CreateUserPayload = {
 };
 
 type UpdateUserPayload = {
+  email?: string;
   name: string;
   used_name?: string;
   company?: string;

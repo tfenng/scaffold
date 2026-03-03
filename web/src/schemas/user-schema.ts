@@ -10,6 +10,7 @@ export const createUserSchema = z.object({
 });
 
 export const updateUserSchema = z.object({
+  email: z.string().email("Invalid email address").optional().or(z.literal("")),
   name: z.string().min(1, "Name is required"),
   used_name: z.string().optional(),
   company: z.string().optional(),

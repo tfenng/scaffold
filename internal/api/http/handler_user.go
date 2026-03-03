@@ -91,6 +91,7 @@ func (h *UserHandler) List(c *gin.Context) {
 }
 
 type updateUserReq struct {
+	Email    *string `json:"email"`
 	Name     string  `json:"name" binding:"required"`
 	UsedName *string `json:"used_name"`
 	Company  *string `json:"company"`
@@ -115,7 +116,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 		return
 	}
 
-	u, err := h.Svc.Update(c.Request.Context(), id, req.Name, req.UsedName, req.Company, birth)
+	u, err := h.Svc.Update(c.Request.Context(), id, req.Email, req.Name, req.UsedName, req.Company, birth)
 	if err != nil {
 		c.Error(err)
 		return

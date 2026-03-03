@@ -104,7 +104,7 @@ func (s *UserService) List(ctx context.Context, f repo.UserListFilter) (repo.Pag
 	return out, nil
 }
 
-func (s *UserService) Update(ctx context.Context, id int64, name string, usedName, company *string, birth *time.Time) (sqlc.User, error) {
+func (s *UserService) Update(ctx context.Context, id int64, email *string, name string, usedName, company *string, birth *time.Time) (sqlc.User, error) {
 	if id <= 0 {
 		return sqlc.User{}, domain.Invalid("id must be positive")
 	}
@@ -112,9 +112,14 @@ func (s *UserService) Update(ctx context.Context, id int64, name string, usedNam
 		return sqlc.User{}, domain.Invalid("name is required")
 	}
 
+	normalizedEmail, err := normalizeEmail(email)
+	if err != nil {
+		return sqlc.User{}, domain.Invalid("email must be a valid email address")
+	}
+
 	var out sqlc.User
-	err := s.Tx.WithinTx(ctx, func(ctx context.Context) error {
-		u, err := s.Users.Update(ctx, id, name, usedName, company, birth)
+	err = s.Tx.WithinTx(ctx, func(ctx context.Context) error {
+		u, err := s.Users.Update(ctx, id, normalizedEmail, name, usedName, company, birth)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
 				return domain.NotFound("user not found")

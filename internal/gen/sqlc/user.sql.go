@@ -260,7 +260,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUse
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
-SET name = $2, used_name = $3, company = $4, birth = $5, updated_at = now()
+SET name = $2, email = $6::text, used_name = $3, company = $4, birth = $5, updated_at = now()
 WHERE id = $1
 RETURNING id, uid, email, name, used_name, company, birth, created_at, updated_at
 `
@@ -271,6 +271,7 @@ type UpdateUserParams struct {
 	UsedName pgtype.Text
 	Company  pgtype.Text
 	Birth    pgtype.Date
+	Email    pgtype.Text
 }
 
 type UpdateUserRow struct {
@@ -292,6 +293,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateU
 		arg.UsedName,
 		arg.Company,
 		arg.Birth,
+		arg.Email,
 	)
 	var i UpdateUserRow
 	err := row.Scan(

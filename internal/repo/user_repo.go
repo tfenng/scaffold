@@ -14,7 +14,7 @@ type UserRepo interface {
 	GetByEmail(ctx context.Context, email string) (sqlc.User, error)
 	GetByUID(ctx context.Context, uid string) (sqlc.User, error)
 	Create(ctx context.Context, uid string, email *string, name string, usedName, company *string, birth *time.Time) (sqlc.User, error)
-	Update(ctx context.Context, id int64, name string, usedName, company *string, birth *time.Time) (sqlc.User, error)
+	Update(ctx context.Context, id int64, email *string, name string, usedName, company *string, birth *time.Time) (sqlc.User, error)
 	Delete(ctx context.Context, id int64) error
 }
 
@@ -65,10 +65,11 @@ func (r *userRepo) Create(ctx context.Context, uid string, email *string, name s
 	return toUserFromCreate(row)
 }
 
-func (r *userRepo) Update(ctx context.Context, id int64, name string, usedName, company *string, birth *time.Time) (sqlc.User, error) {
+func (r *userRepo) Update(ctx context.Context, id int64, email *string, name string, usedName, company *string, birth *time.Time) (sqlc.User, error) {
 	row, err := r.q(ctx).UpdateUser(ctx, sqlc.UpdateUserParams{
 		ID:       id,
 		Name:     name,
+		Email:    toPgtypeText(email),
 		UsedName: toPgtypeText(usedName),
 		Company:  toPgtypeText(company),
 		Birth:    toPgtypeDate(birth),

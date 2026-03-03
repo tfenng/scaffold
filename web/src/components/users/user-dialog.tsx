@@ -42,6 +42,7 @@ const normalizeCreateInput = (data: CreateUserInput) => ({
 });
 
 const normalizeUpdateInput = (data: UpdateUserInput) => ({
+  email: toOptionalString(data.email),
   name: data.name.trim(),
   used_name: toOptionalString(data.used_name),
   company: toOptionalString(data.company),
@@ -70,6 +71,7 @@ export function UserDialog({ open, onOpenChange, userId }: UserDialogProps) {
   useEffect(() => {
     if (user?.data && isEdit) {
       reset({
+        email: user.data.email || "",
         name: user.data.name,
         used_name: user.data.used_name || "",
         company: user.data.company || "",
@@ -207,24 +209,22 @@ export function UserDialog({ open, onOpenChange, userId }: UserDialogProps) {
                 </p>
               )}
             </div>
-            {!isEdit && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="email" className="text-right">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  {...register("email")}
-                  className="col-span-3"
-                  placeholder="user@example.com"
-                />
-                {errors.email && (
-                  <p className="col-span-4 text-right text-sm text-destructive">
-                    {errors.email.message as string}
-                  </p>
-                )}
-              </div>
-            )}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="email"
+                {...register("email")}
+                className="col-span-3"
+                placeholder="user@example.com"
+              />
+              {errors.email && (
+                <p className="col-span-4 text-right text-sm text-destructive">
+                  {errors.email.message as string}
+                </p>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
